@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Messenger Laugh Reaction Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1.0/dist/chartjs-chart-matrix.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: white;
+      color: #333;
+    }
+    .container {
+  transition: box-shadow 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+      max-width: 950px;
+      margin: 4rem auto;
+      padding: 2.5rem 2rem;
+      
+      transition: all 0.3s ease-in-out;
+    }
+    h1 {
+      font-size: 2.4rem;
+      text-align: center;
+      color: #1a3e59;
+      margin-bottom: 1.5rem;
+    }
+    button {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+      background-color: white;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background-color: #333;
+    }
+    .wizard {
+      background: #eef6fc;
+      
+      padding: 1rem 1.5rem;
+      margin-bottom: 0.5rem;
+      border-radius: 6px;
+    }
+    .wizard h2 {
+      margin-top: 0;
+      font-size: 1.3rem;
+      color: #004a70;
+    }
+    .wizard ol {
+      padding-left: 1.2rem;
+      margin-bottom: 0;
+    }
+    .wizard ol li {
+      margin-bottom: 1rem;
+    }
+    canvas {
+      margin-top: 2rem;
+      max-width: 100%;
+    }
+    a {
+      color: #0077b6;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  
+    .button-style {
+      background-color: white;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      border-radius: 999px;
+      display: inline-block;
+      line-height: 1.2;
+      transition: background 0.3s ease;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .button-style:hover {
+      background-color: #333;
+    }
+    
+#laughPartnerHeatmap {
+  max-height: 500px;
+  display: block;
+  margin: 0 auto;
+}
+
+
+
+
+canvas {
+  margin-top: 3rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+button:hover {
+  transform: scale(1.03);
+}
+
+.chartjs-render-monitor {
+  transition: all 0.4s ease-in-out;
+}
+
+#downloadPDF {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  background-color: #0077b6 !important;
+  color: white !important;
+  padding: 0.9rem 2rem !important;
+  font-size: 1rem !important;
+  border: none !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  margin-top: 3rem !important;
+}
+
+#downloadPDF {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+/* Highlights Box */
+#insights {
+  background: #f9fafb !important;
+  padding: 2rem 2rem 1.5rem 2rem !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  margin-top: 2rem !important;
+}
+
+/* Highlight Title */
+#insights h2 {
+  font-size: 1.5rem !important;
+  color: #1a3e59 !important;
+  margin-bottom: 1.2rem !important;
+  font-weight: 600 !important;
+}
+
+/* Highlight Summary Text */
+#summary {
+  font-size: 1.05rem !important;
+  line-height: 1.7 !important;
+  color: #333 !important;
+}
+
+/* Most Laughed-At Message Title */
+#insights h3 {
+  font-size: 1.3rem !important;
+  color: #1a3e59 !important;
+  font-weight: 600 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 0.8rem !important;
+}
+
+/* Message Block Styling */
+#insights div[style*="padding: 1rem"] {
+  background: #f0f2f5 !important;
+  border-left: 4px solid #0077b6 !important;
+  border-radius: 12px !important;
+  padding: 1rem 1.2rem !important;
+  font-size: 1rem !important;
+  color: #111 !important;
+}
+</style>
+</head>
+<body>
+<div id="landingPage" style="height: 100vh; width: 100vw; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'DM Sans', sans-serif;">
+<h1 style="font-size: 2.8rem; margin-bottom: 1rem; color: #1a3e59;">Messenger Laugh Tracker</h1>
+<p style="font-size: 1.2rem; color: #444; max-width: 600px; margin-bottom: 2.5rem;">
+    Who’s the real MVP of your group chat? Discover laugh patterns, leaderboards, and hidden trends from your Facebook Messenger chats.
+  </p>
+<div style="width: 300px; height: 150px; background: #f3f3f3; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #777; margin-bottom: 2rem;">
+<div style="width: 300px; height: 200px; margin-bottom: 3.5rem;">
+<canvas height="180" id="previewChart" style="display:block;" width="300"></canvas>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const ctx = document.getElementById('previewChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Alice', 'Bob', 'Charlie'],
+        datasets: [
+          {
+            label: 'Laughs Given',
+            data: [5, 8, 3],
+            backgroundColor: 'rgba(75, 192, 192, 0.7)'
+          },
+          {
+            label: 'Laughs Received',
+            data: [7, 4, 6],
+            backgroundColor: 'rgba(255, 206, 86, 0.7)'
+          }
+        ]
+      },
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 5000,
+          easing: 'easeOutQuad',
+          loop: true
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            display: false
+          },
+          x: {
+            display: false
+          }
+        }
+      }
+    });
+  });
+</script>
+</div>
+<button onclick="enterApp()" style="background-color: #0077b6; color: white; padding: 0.9rem 2rem; font-size: 1rem; border: none; border-radius: 999px; cursor: pointer;">
+    Get Started
+  </button>
+</div>
+<script>
+function enterApp() {
+  document.getElementById('landingPage').style.display = 'none';
+  document.querySelector('.container').style.display = 'block';
+}
+</script>
+<div class="container" style="display:none;">
+<h1 id="dynamicChatTitle" style="margin-bottom: 0.1rem !important;">Messenger Laugh Reaction Tracker</h1>
+<div class="wizard" id="instructions">
+<h2>📥 How to Download Your Facebook Messenger Data</h2>
+<ol>
+<li><strong>Go to the Facebook download page</strong> 🔗<br/>
+Click this direct link 👉 <a href="https://www.facebook.com/settings?tab=your_facebook_information" target="_blank">Your Facebook Information</a><br/>
+Then click <strong>“Download or transfer information”</strong><br/>
+Choose <strong>“Specific types of information”</strong><br/>
+✅ Tick the <strong>“Messages”</strong> box<br/>
+📲 Choose <strong>“Download to device”</strong></li>
+<li><strong>Set download preferences</strong> ⚙️<br/>
+📅 <strong>Date range:</strong> Choose a period anywhere between <strong>1 month to 1 year</strong><br/>
+🧾 <strong>Format:</strong> Select <strong>JSON</strong> (not HTML)<br/>
+📉 <strong>Media quality:</strong> Set to <strong>Low</strong> (optional for smaller file size)<br/>
+⚠️ <em>Once you click “Create File,” Facebook will need time to prepare your download. This may take up to 10 minutes depending on the size of the data.</em></li>
+<li><strong>Create your file</strong> 🛠️<br/>
+Click <strong>“Create File”</strong><br/>
+Facebook will begin preparing your file — you’ll get a notification once it’s ready<br/>
+⏳ <em>This process may take a few minutes, so feel free to check back later if needed</em></li>
+<li><strong>Download and unzip</strong> 📦<br/>
+Go to the <strong>“Available files”</strong> tab<br/>
+Click <strong>Download</strong> and unzip the file</li>
+<li><strong>Find your message data</strong> 📁<br/>
+Navigate to: <code>facebook-&lt;yourname&gt;/messages/inbox/</code><br/>
+Locate a file like <code>message_1.json</code></li>
+<li><strong>Upload it here</strong> 📤<br/>
+Upload the JSON file to the <strong>“Choose File”</strong> button below</li>
+</ol>
+</div>
+<label class="button-style" for="fileInput" style="display:inline-block;background:#111;color:#fff;border-radius:999px;font-weight:600;padding:0.75rem 1.5rem;cursor:pointer;font-family:'DM Sans', sans-serif;font-size:1rem;">Choose File</label>
+<input accept=".json" id="fileInput" style="opacity:0;position:absolute;z-index:-1;" type="file"/>
+<div id="dateRange" style="margin-top: 0.5rem !important; margin-bottom: 1rem; font-size: 1rem; font-weight: 500; color: #555; text-align: center; width: 100%;"></div>
+<div id="insights" style="display: none !important;">
+<h2 style="margin-top: 0; font-size: 1.4rem; color: #004a70; margin-bottom: 1rem;">📌 Highlights</h2>
+<div id="summary" style="font-size: 1.1rem; font-weight: 500;"></div>
+</div>
+<canvas id="laughChart" style="display: none; height:300px; padding: 0 2rem;"></canvas>
+<canvas id="ratioChart" style="display: none; height:300px; padding: 0 2rem;"></canvas>
+<canvas id="topMessageChart" style="display: none; height:300px; padding: 0 2rem;"></canvas>
+<canvas id="reactionPerMessageChart" style="display: none; height:300px; padding: 0 2rem;"></canvas>
+<div id="pdfButtonWrapper" style="display:none; text-align:center;"><button class="button-style" id="downloadPDF" style="display: none;">Download Data as PDF</button></div></div>
+<script>
+    let laughChart = null;
+    let ratioChart = null;
+    let topMessageChart = null;
+    let reactionPerMessageChart = null;
+    let exportData = [];
+
+    const laughEmojis = ['😂', '😆', '\ud83d\ude06'];
+    const decodeEmoji = (str) => {
+      try {
+        return decodeURIComponent(escape(str));
+      } catch (e) {
+        return str;
+      }
+    };
+
+    function destroyCharts() {
+      if (laughChart) laughChart.destroy();
+      if (ratioChart) ratioChart.destroy();
+      if (topMessageChart) topMessageChart.destroy();
+      if (reactionPerMessageChart) reactionPerMessageChart.destroy();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const json = JSON.parse(event.target.result);
+          if (!json.messages || !Array.isArray(json.messages)) {
+            alert('This JSON file does not contain a "messages" array.');
+            return;
+          }
+          analyzeMessages(json);
+        } catch (err) {
+          alert('Invalid JSON file.');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function analyzeMessages(data) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+
+      const chatTitle = data.title || "Unnamed Chat";
+
+const timestamps = data.messages
+  .map(msg => msg.timestamp_ms)
+  .filter(Boolean)
+  .sort((a, b) => a - b);
+
+if (timestamps.length) {
+  const formatDate = ms => {
+    const date = new Date(ms);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+  const start = formatDate(timestamps[0]);
+  const end = formatDate(timestamps[timestamps.length - 1]);
+  document.getElementById('dateRange').textContent = `${start} – ${end}`;
+}
+
+      const chatTitleDiv = document.getElementById('chatTitle'); if (chatTitleDiv) chatTitleDiv.textContent = chatTitle;
+      const dynamicTitle = document.getElementById('dynamicChatTitle');
+      if (dynamicTitle) dynamicTitle.textContent = chatTitle;
+
+      
+    // Hide Choose File button on third page
+    document.querySelector('label[for="fileInput"]').style.display = 'none';
+    document.getElementById('fileInput').style.display = 'none';
+
+    
+      document.getElementById('insights').style.display = 'block';
+
+      document.getElementById('laughChart').style.display = 'block';
+      document.getElementById('ratioChart').style.display = 'block';
+      document.getElementById('topMessageChart').style.display = 'block';
+      document.getElementById('reactionPerMessageChart').style.display = 'block';
+    document.getElementById('pdfButtonWrapper').style.display = 'block';
+    
+document.getElementById('downloadPDF').style.display = 'inline-block';
+
+
+document.getElementById('instructions').style.display = 'none';
+      destroyCharts();
+      const reactionsGiven = {};
+      const reactionsReceived = {};
+      const maxReactionsOnMessage = {};
+      const totalMessagesSent = {};
+
+      data.messages.forEach(msg => {
+        const sender = msg.sender_name;
+        totalMessagesSent[sender] = (totalMessagesSent[sender] || 0) + 1;
+
+        let receivedCount = 0;
+        if (msg.reactions && Array.isArray(msg.reactions)) {
+          msg.reactions.forEach(reaction => {
+            const emoji = decodeEmoji(reaction.reaction);
+            if (laughEmojis.includes(emoji)) {
+              const giver = reaction.actor;
+              reactionsGiven[giver] = (reactionsGiven[giver] || 0) + 1;
+              reactionsReceived[sender] = (reactionsReceived[sender] || 0) + 1;
+              receivedCount++;
+            }
+          });
+        }
+
+        if (receivedCount > 0) {
+          maxReactionsOnMessage[sender] = Math.max(maxReactionsOnMessage[sender] || 0, receivedCount);
+        }
+      });
+
+      const labels = [...new Set([...Object.keys(reactionsGiven), ...Object.keys(reactionsReceived)])].sort();
+      if (labels.length === 0) {
+        alert("No laugh reactions found.");
+        return;
+      }
+
+      const givenData = labels.map(name => reactionsGiven[name] || 0);
+      const receivedData = labels.map(name => reactionsReceived[name] || 0);
+      const ratioData = labels.map(name => {
+        const given = reactionsGiven[name] || 0;
+        const received = reactionsReceived[name] || 0;
+        return received > 0 ? (given / received).toFixed(2) : 0;
+      });
+      const maxMessageData = labels.map(name => maxReactionsOnMessage[name] || 0);
+      const reactionRateData = labels.map(name => {
+        const received = reactionsReceived[name] || 0;
+        const sent = totalMessagesSent[name] || 0;
+        return sent > 0 ? (received / sent).toFixed(2) : 0;
+      });
+
+      laughChart = new Chart(document.getElementById('laughChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Laughs Given', data: givenData, backgroundColor: 'rgba(75, 192, 192, 0.7)' },
+            { label: 'Laughs Received', data: receivedData, backgroundColor: 'rgba(255, 206, 86, 0.7)' }
+          ]
+        },
+        options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: () => '',
+              label: (ctx) => {
+                const from = ctx.raw.y;
+                const to = ctx.raw.x;
+                const count = ctx.raw.v;
+                return `${from} laughed at ${to} ${count} time${count === 1 ? '' : 's'}`;
+              }
+            }
+          }
+        },
+ responsive: true, plugins: { title: { display: true, text: 'Laughs Given vs Received',
+              padding: { bottom: 15 } } }, scales: { y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
+      });
+
+      ratioChart = new Chart(document.getElementById('ratioChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Laugh Ratio (Given/Received)', data: ratioData, backgroundColor: 'rgba(153, 102, 255, 0.7)' }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Laugh Ratio per Person',
+              padding: { bottom: 15 } } }, scales: { y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
+      });
+
+      topMessageChart = new Chart(document.getElementById('topMessageChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Most Laughs on a Single Message', data: maxMessageData, backgroundColor: 'rgba(255, 99, 132, 0.7)' }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Top Message Laugh Reactions',
+              padding: { bottom: 15 } } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
+      });
+
+      
+      
+// Smarter Dynamic Summary
+let summaryText = '';
+const mostReceived = labels.reduce((a, b) => (reactionsReceived[a] || 0) > (reactionsReceived[b] || 0) ? a : b);
+const secondMostReceived = labels.filter(n => n !== mostReceived).reduce((a, b) => (reactionsReceived[a] || 0) > (reactionsReceived[b] || 0) ? a : b, '');
+const mostReceivedCount = reactionsReceived[mostReceived] || 0;
+const secondReceivedCount = reactionsReceived[secondMostReceived] || 0;
+
+const bestEfficiency = labels.reduce((a, b) => {
+  const aRatio = (reactionsReceived[a] || 0) / (totalMessagesSent[a] || 1);
+  const bRatio = (reactionsReceived[b] || 0) / (totalMessagesSent[b] || 1);
+  return aRatio > bRatio ? a : b;
+});
+const bestRatio = (reactionsReceived[bestEfficiency] || 0) / (totalMessagesSent[bestEfficiency] || 1);
+const roundedRatio = bestRatio > 0 ? (1 / bestRatio).toFixed(1) : '∞';
+
+// Detect patterns
+const diff = mostReceivedCount - secondReceivedCount;
+const selfLaughers = labels.filter(name => reactionsGiven[name] && reactionsReceived[name] && name === mostReceived && reactionsGiven[name] > 0);
+const totalGiven = labels.map(name => reactionsGiven[name] || 0);
+const totalReceived = labels.map(name => reactionsReceived[name] || 0);
+const isBalanced = Math.max(...totalGiven) - Math.min(...totalGiven) < 5 && Math.max(...totalReceived) - Math.min(...totalReceived) < 5;
+
+// Build summary
+if (diff > 10) {
+  summaryText += `👑 <strong>${mostReceived}</strong> is the undisputed laughter lord with <strong>${mostReceivedCount}</strong> laughs received.`;
+} else if (diff <= 5 && secondMostReceived) {
+  summaryText += `📣 It’s a tight race! <strong>${mostReceived}</strong> has <strong>${mostReceivedCount}</strong> laughs, just ahead of <strong>${secondMostReceived}</strong> with <strong>${secondReceivedCount}</strong>.`;
+} else {
+  summaryText += `💬 <strong>${mostReceived}</strong> takes the top spot with <strong>${mostReceivedCount}</strong> laughs.`;
+}
+
+summaryText += ` <strong>${bestEfficiency}</strong> is laugh-efficient, averaging 1 laugh every <strong>${roundedRatio}</strong> messages.`;
+
+if (selfLaughers.length) {
+  summaryText += ` 😂 Also, <strong>${selfLaughers[0]}</strong> laughed at their own message. Power move.`;
+}
+
+if (isBalanced) {
+  summaryText += ` 🤝 Laughs are flowing evenly — wholesome group energy detected.`;
+}
+
+document.getElementById('summary').innerHTML = summaryText;
+
+// --- Find Most Laughed-At Message ---
+let topLaughMessage = '';
+let topLaughCount = 0;
+let topLaughSender = '';
+let topLaughTimestamp = '';
+
+data.messages.forEach(msg => {
+  let laughCount = 0;
+  if (msg.reactions && Array.isArray(msg.reactions)) {
+    msg.reactions.forEach(reaction => {
+      const emoji = decodeEmoji(reaction.reaction);
+      if (laughEmojis.includes(emoji)) {
+        laughCount++;
+      }
+    });
+  }
+  if (laughCount > topLaughCount) {
+    topLaughCount = laughCount;
+    topLaughMessage = msg.content || '[Media or Unreadable Message]';
+    topLaughSender = msg.sender_name;
+    topLaughTimestamp = msg.timestamp_ms;
+  }
+});
+
+let topDate = '';
+if (topLaughTimestamp) {
+  const date = new Date(topLaughTimestamp);
+  topDate = date.toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+}
+
+const messageBlock = document.createElement('div');
+messageBlock.style.margin = '2rem 0';
+messageBlock.innerHTML = `
+  <h3 style="margin-bottom: 0.5rem; color: #1a3e59;">🤣 Most Laughed-At Message</h3>
+  <div style="padding: 1rem; background: #f9f9f9; border-left: 4px solid #ff9800; border-radius: 8px;">
+    <strong>${topLaughSender}</strong> on <em>${topDate}</em> received <strong>${topLaughCount}</strong> laugh reactions:<br/><br/>
+    "${topLaughMessage}"
+  </div>
+`;
+console.log('Top laugh message block:', messageBlock);
+document.getElementById('insights').appendChild(messageBlock);
+
+
+
+reactionPerMessageChart = new Chart(document.getElementById('reactionPerMessageChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Laughs Received per Message Sent', data: reactionRateData, backgroundColor: 'rgba(54, 162, 235, 0.7)' }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Laughs per Message Sent',
+              padding: { bottom: 15 } } }, scales: { y: { beginAtZero: true, ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { color: '#666' }, grid: { color: 'rgba(0,0,0,0.05)' } } } }
+      });
+
+      
+
+const heatmapCanvas = document.createElement('canvas');
+heatmapCanvas.id = 'laughPartnerHeatmap';
+heatmapCanvas.style.marginTop = '40px';
+heatmapCanvas.style.width = '100%';
+heatmapCanvas.style.height = '400px';
+
+document.getElementById('reactionPerMessageChart').after(heatmapCanvas);
+
+
+      
+      // STEP 2: Build and log Laugh Partnership data
+      const laughMatrix = {};
+      const peopleSet = new Set();
+
+      data.messages.forEach(msg => {
+        const sender = msg.sender_name;
+        if (msg.reactions && Array.isArray(msg.reactions)) {
+          msg.reactions.forEach(reaction => {
+            const emoji = decodeEmoji(reaction.reaction);
+            if (laughEmojis.includes(emoji)) {
+              const reactor = reaction.actor;
+              peopleSet.add(sender);
+              peopleSet.add(reactor);
+              if (!laughMatrix[reactor]) laughMatrix[reactor] = {};
+              laughMatrix[reactor][sender] = (laughMatrix[reactor][sender] || 0) + 1;
+            }
+          });
+        }
+      });
+
+      const people = Array.from(peopleSet).sort();
+      console.log('👥 People in chat:', people);
+
+      // STEP 3: Convert laughMatrix into a 2D array matrix (excluding self-laughs)
+      const laughGrid = people.map(giver =>
+        people.map(receiver => {
+          if (giver === receiver) return 0; // exclude self-laughs
+          return (laughMatrix[giver] && laughMatrix[giver][receiver]) || 0;
+        })
+      );
+
+      console.log('📐 Laugh Matrix Grid (2D array, no self-laughs):', laughGrid);
+
+      // STEP 4A: Render Laugh Partnership Heatmap using Chart.js Matrix plugin
+      const matrixData = [];
+
+      for (let row = 0; row < people.length; row++) {
+        for (let col = 0; col < people.length; col++) {
+          if (row === col) continue; // skip self-laughs
+          matrixData.push({
+            x: people[col],
+            y: people[row],
+            v: laughGrid[row][col]
+          });
+        }
+      }
+
+      new Chart(document.getElementById('laughPartnerHeatmap'), {
+        plugins: [ChartDataLabels],
+        type: 'matrix',
+        data: {
+          labels: people,
+          datasets: [{
+            label: 'Laugh Partnership Heatmap',
+            data: matrixData,
+            backgroundColor(ctx) {
+              const value = ctx.raw.v;
+              const alpha = value > 0 ? Math.min(0.3 + value / 10, 1) : 0.1;
+              return `rgba(255, 99, 132, ${alpha})`;
+            },
+            borderColor: '#eee',
+            borderWidth: 1,
+datalabels: {
+            color: '#000',
+            font: {
+              size: 10,
+              weight: 'bold'
+            },
+            formatter: value => value.v > 0 ? value.v : ''
+          },
+            width: (ctx) => {
+              const chartArea = ctx.chart.chartArea;
+              return chartArea ? Math.floor(chartArea.width / people.length) : 30;
+            },
+            height: (ctx) => {
+              const chartArea = ctx.chart.chartArea;
+              return chartArea ? Math.floor(chartArea.height / people.length) : 30;
+            },
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Who Laughs at Whom (Heatmap)',
+              padding: { bottom: 15 },
+              padding: { bottom: 40 }
+            },
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                title() { return ''; },
+                label(ctx) {
+                  return `${ctx.raw.y} laughed at ${ctx.raw.x}: ${ctx.raw.v}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'category',
+              labels: people,
+              title: { display: true, text: 'Person Receiving Laughs',
+              padding: { bottom: 15 } },
+              ticks: {
+  autoSkip: false,
+  maxRotation: 45,
+  minRotation: 30,
+  font: { size: 10 }
+},
+            },
+            y: {
+              type: 'category',
+              labels: people,
+              title: { display: true, text: 'Person Giving Laughs',
+              padding: { bottom: 15 } }
+            }
+          }
+        }
+      });
+
+
+
+
+      exportData = labels.map(name => ({
+        name,
+        given: reactionsGiven[name] || 0,
+        received: reactionsReceived[name] || 0
+      }));
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      if (!exportData.length) return alert('No data to download.');
+      const csvContent = 'Name,Laughs Given,Laughs Received\n' +
+        exportData.map(row => `${row.name},${row.given},${row.received}`).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'laugh_data.csv';
+      link.click();
+    });
+  </script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const titleElement = document.getElementById('dynamicChatTitle');
+    const chatTitleText = document.getElementById('chatTitle')?.textContent;
+    if (titleElement && chatTitleText) {
+      titleElement.textContent = chatTitleText;
+    }
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  document.getElementById("downloadPDF").addEventListener("click", async () => {
+    const container = document.querySelector(".container");
+    const canvas = await html2canvas(container, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [canvas.width, canvas.height]
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+    pdf.save("messenger_laugh_data.pdf");
+  });
+</script>
+</body>
+</html>
